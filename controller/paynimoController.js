@@ -89,7 +89,7 @@ const checkoutStatus = async (req, res) => {
     if (!msg) {
       logger.warn(`[CHECKOUT STATUS] No 'msg' data received in request body.`);
       // return res.status(400).json({ message: "No message received" });
-      return res.redirect(`${baseURL}/failure`);
+      return res.redirect(`${baseURL}/status/failure`);
     }
 
     const msgFields = msg.split("|");
@@ -121,7 +121,7 @@ const checkoutStatus = async (req, res) => {
         `[CHECKOUT STATUS] Hash validation failed | txnId: ${responseData.clnt_txn_ref}`
       );
       // return res.status(400).json({ message: "Payment Failed" });
-      return res.redirect(`${baseURL}/failure`);
+      return res.redirect(`${baseURL}/status/failure`);
     }
 
     if (responseData.txn_status === "0300") {
@@ -129,7 +129,7 @@ const checkoutStatus = async (req, res) => {
         "payment",
         `[PAYMENT SUCCESS] Transaction successful | txnId: ${responseData.clnt_txn_ref}`
       );
-      return res.redirect(`${baseURL}/success`);
+      return res.redirect(`${baseURL}/status/success`);
     }
     // else if (
     //   responseData.txn_status === "0398" ||
@@ -146,20 +146,20 @@ const checkoutStatus = async (req, res) => {
         "payment",
         `[PAYMENT ABORTED] Transaction aborted by user | txnId: ${responseData.clnt_txn_ref}`
       );
-      return res.redirect(`${baseURL}/abort`);
+      return res.redirect(`${baseURL}/status/aborted`);
     } else {
       logger.log(
         "payment",
         `[PAYMENT FAILED] Transaction failed | txnId: ${responseData.clnt_txn_ref}, Status: ${responseData.txn_status}`
       );
-      return res.redirect(`${baseURL}/failure`);
+      return res.redirect(`${baseURL}/status/failure`);
     }
   } catch (error) {
     logger.error(
       `[CHECKOUT STATUS] Unexpected error occurred | Error: ${error.message}`,
       { stack: error.stack }
     );
-    return res.redirect(`${baseURL}/failure`);
+    return res.redirect(`${baseURL}/status/failure`);
   }
 };
 
