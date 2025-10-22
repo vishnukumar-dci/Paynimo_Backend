@@ -16,4 +16,8 @@ app.use(bodyParser.urlencoded({extended:true,limit:'2mb'}))
 
 app.use('/payment',paynimoRoutes)
 
+app.get('/',(req,res) =>{
+    res.json(`Server running on port ${PORT} in ${ENV} mode`);
+})
+
 app.listen(PORT,() => console.log(`Server is running on ${PORT} [${ENV}]`))
