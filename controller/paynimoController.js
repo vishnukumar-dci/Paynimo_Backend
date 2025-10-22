@@ -41,23 +41,44 @@ const createCheckout = async (req, res) => {
     logger.info(
       `[CREATE CHECKOUT] checkout created successfully | Email: ${email}, Phone: ${phoneno}, Amount: ${amount}`
     );
-    res.status(201).json({
+    // res.status(201).json({
+    //   success: true,
+    //   merchantId: MERCHANT_ID,
+    //   txnId,
+    //   amount,
+    //   cusId,
+    //   token,
+    //   currency: "INR",
+    //   phoneno,
+    //   email,
+    // });
+    return res.status(201).json({
       success: true,
-      merchantId: MERCHANT_ID,
-      txnId,
-      amount,
-      cusId,
-      token,
-      currency: "INR",
-      phoneno,
-      email,
+      status: 201,
+      message: "Checkout created successfully",
+      data: {
+        merchantId: MERCHANT_ID,
+        txnId,
+        amount,
+        cusId,
+        token,
+        currency: "INR",
+        phoneno,
+        email,
+      },
     });
   } catch (error) {
     console.log(error);
     logger.error(
       `[CREATE CHECKOUT] Failed to create checkout | Email: ${email}, Phone: ${phoneno}, Amount: ${amount}`
     );
-    res.status(500).json({ message: error, success: false });
+    // res.status(500).json({ message: error, success: false });
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Failed to create checkout",
+      data: {},
+    });
   }
 };
 
@@ -67,7 +88,8 @@ const checkoutStatus = async (req, res) => {
   try {
     if (!msg) {
       logger.warn(`[CHECKOUT STATUS] No 'msg' data received in request body.`);
-      return res.status(400).json({ message: "No message received" });
+      // return res.status(400).json({ message: "No message received" });
+      return res.redirect(`${baseURL}/failure`);
     }
 
     const msgFields = msg.split("|");
@@ -98,30 +120,36 @@ const checkoutStatus = async (req, res) => {
       logger.error(
         `[CHECKOUT STATUS] Hash validation failed | txnId: ${responseData.clnt_txn_ref}`
       );
-      return res.status(400).json({ message: "Payment Failed" });
+      // return res.status(400).json({ message: "Payment Failed" });
+      return res.redirect(`${baseURL}/failure`);
     }
 
     if (responseData.txn_status === "0300") {
-      logger.log('payment',
+      logger.log(
+        "payment",
         `[PAYMENT SUCCESS] Transaction successful | txnId: ${responseData.clnt_txn_ref}`
       );
       return res.redirect(`${baseURL}/success`);
-    } else if (
-      responseData.txn_status === "0398" ||
-      responseData.txn_status === "0396"
-    ) {
-      return res.send(
-        `Payment is ${
-          responseData.txn_status === "0398" ? "Initiated" : "Awaited"
-        }`
-      );
-    } else if (responseData.txn_status === "0392") {
-      logger.log('payment',
+    }
+    // else if (
+    //   responseData.txn_status === "0398" ||
+    //   responseData.txn_status === "0396"
+    // ) {
+    //   return res.send(
+    //     `Payment is ${
+    //       responseData.txn_status === "0398" ? "Initiated" : "Awaited"
+    //     }`
+    //   );
+    // }
+    else if (responseData.txn_status === "0392") {
+      logger.log(
+        "payment",
         `[PAYMENT ABORTED] Transaction aborted by user | txnId: ${responseData.clnt_txn_ref}`
       );
       return res.redirect(`${baseURL}/abort`);
     } else {
-      logger.log('payment',
+      logger.log(
+        "payment",
         `[PAYMENT FAILED] Transaction failed | txnId: ${responseData.clnt_txn_ref}, Status: ${responseData.txn_status}`
       );
       return res.redirect(`${baseURL}/failure`);
