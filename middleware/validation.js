@@ -26,15 +26,26 @@ const Inputs = [
 function validateInputs(req, res, next) {
   const errors = validationResult(req);
   const { email, phoneno, amount } = req.body;
+
   if (!errors.isEmpty()) {
     logger.warn(
-      `[CREATE CHECKOUT] Missing Required Fields | Email: ${email}, Phone: ${phoneno}, Amount: ${amount}`
+      `[CREATE CHECKOUT] Validation failed | Email: ${email}, Phone: ${phoneno}, Amount: ${amount}`
     );
+
+    // Send standardized response with proper status code
     return res.status(400).json({
       success: false,
-      message: errors.array(),
+      status: 400,
+      message: "Validation failed. Please check your input fields.",
+      errors: errors.array(),
+      data: {
+        email,
+        phoneno,
+        amount,
+      },
     });
   }
+
   next();
 }
 
