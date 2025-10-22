@@ -17,7 +17,7 @@ const Inputs = [
     .notEmpty()
     .withMessage("Transaction amount is required.")
     .bail()
-    .isFloat({ min: 10 })
+    // .isFloat({ min: 10 })
     .withMessage("Transaction amount must be at least ₹10"),
 
   body("phoneno").notEmpty().trim().withMessage("Mobile number is required."),
