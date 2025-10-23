@@ -116,21 +116,28 @@ const checkoutStatus = async (req, res) => {
 
     const hash = await Hash.verifyHash(responseData, MERCHANT_KEY);
 
+    console.log("responseData", responseData);
+    console.log("hash", hash);
+    console.log("responseHash", responseHash);
+    console.log("responseHash", hash !== responseHash);
+
     if (hash !== responseHash) {
       logger.error(
         `[CHECKOUT STATUS] Hash validation failed | txnId: ${responseData.clnt_txn_ref}`
       );
+      console.log("${responseData.clnt_txn_ref", responseData.clnt_txn_ref);
+
       // return res.status(400).json({ message: "Payment Failed" });
       return res.redirect(`${baseURL}/status/failure`);
     }
 
-    if (responseData.txn_status === "0300") {
-      logger.log(
-        "payment",
-        `[PAYMENT SUCCESS] Transaction successful | txnId: ${responseData.clnt_txn_ref}`
-      );
-      return res.redirect(`${baseURL}/status/success`);
-    }
+    // if (responseData.txn_status === "0300") {
+    //   logger.log(
+    //     "payment",
+    //     `[PAYMENT SUCCESS] Transaction successful | txnId: ${responseData.clnt_txn_ref}`
+    //   );
+    //   return res.redirect(`${baseURL}/status/success`);
+    // }
     // else if (
     //   responseData.txn_status === "0398" ||
     //   responseData.txn_status === "0396"
@@ -141,18 +148,51 @@ const checkoutStatus = async (req, res) => {
     //     }`
     //   );
     // }
-    else if (responseData.txn_status === "0392") {
+    // else if (responseData.txn_status === "0392") {
+    //   logger.log(
+    //     "payment",
+    //     `[PAYMENT ABORTED] Transaction aborted by user | txnId: ${responseData.clnt_txn_ref}`
+    //   );
+    //   return res.redirect(`${baseURL}/status/aborted`);
+    // } else {
+    //   logger.log(
+    //     "payment",
+    //     `[PAYMENT FAILED] Transaction failed | txnId: ${responseData.clnt_txn_ref}, Status: ${responseData.txn_status}`
+    //   );
+    //   return res.redirect(`${baseURL}/status/failure`);
+    // }
+    if (responseData.txn_status === "0300") {
+      logger.log(
+        "payment",
+        `[PAYMENT SUCCESS] Transaction successful | txnId: ${responseData.clnt_txn_ref}`
+      );
+      return res.redirect(
+        `${baseURL}/status/success?txnId=${responseData.clnt_txn_ref}&amount=${
+          responseData.txn_amt
+        }&status=success&msg=${encodeURIComponent(responseData.txn_msg)}`
+      );
+    } else if (responseData.txn_status === "0392") {
       logger.log(
         "payment",
         `[PAYMENT ABORTED] Transaction aborted by user | txnId: ${responseData.clnt_txn_ref}`
       );
-      return res.redirect(`${baseURL}/status/aborted`);
+      return res.redirect(
+        `${baseURL}/status/aborted?txnId=${responseData.clnt_txn_ref}&amount=${
+          responseData.txn_amt
+        }&status=aborted&msg=${encodeURIComponent(responseData.txn_msg)}`
+      );
     } else {
       logger.log(
         "payment",
         `[PAYMENT FAILED] Transaction failed | txnId: ${responseData.clnt_txn_ref}, Status: ${responseData.txn_status}`
       );
-      return res.redirect(`${baseURL}/status/failure`);
+      return res.redirect(
+        `${baseURL}/status/failure?txnId=${responseData.clnt_txn_ref}&amount=${
+          responseData.txn_amt
+        }&status=failure&msg=${encodeURIComponent(
+          responseData.txn_err_msg || responseData.txn_msg
+        )}`
+      );
     }
   } catch (error) {
     logger.error(
