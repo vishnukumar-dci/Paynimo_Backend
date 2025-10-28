@@ -7,7 +7,7 @@ const MERCHANT_KEY = process.env.encKey;
 const baseURL = process.env.baseURL;
 
 const createCheckout = async (req, res) => {
-  const { amount, email, phoneno } = req.body;
+  const { amount, email, phoneno,currency } = req.body;
 
   logger.info(
     `[CREATE CHECKOUT] Request received | Email: ${email}, Phone: ${phoneno}, Amount: ${amount}`
@@ -62,7 +62,7 @@ const createCheckout = async (req, res) => {
         amount,
         cusId,
         token,
-        currency: "INR",
+        currency,
         phoneno,
         email,
       },

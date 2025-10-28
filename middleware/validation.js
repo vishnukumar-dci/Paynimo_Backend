@@ -1,5 +1,6 @@
 const { body, validationResult } = require("express-validator");
 const logger = require("../utils/logger");
+const { captureRejectionSymbol } = require("winston-daily-rotate-file");
 
 const emailRegex =
   /^[a-zA-Z0-9]+([._%+-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
@@ -21,17 +22,21 @@ const Inputs = [
     .withMessage("Transaction amount must be at least ₹10"),
 
   body("phoneno").notEmpty().trim().withMessage("Mobile number is required."),
+
+  body("currency")
+    .notEmpty()
+    .withMessage("Currency selection is mandatory")
 ];
 
 function validateInputs(req, res, next) {
   const errors = validationResult(req);
-  const { email, phoneno, amount } = req.body;
+  const { email, phoneno, amount ,currency} = req.body;
 
   if (!errors.isEmpty()) {
     logger.warn(
-      `[CREATE CHECKOUT] Validation failed | Email: ${email}, Phone: ${phoneno}, Amount: ${amount}`
+      `[CREATE CHECKOUT] Validation failed | Email: ${email}, Phone: ${phoneno}, Amount: ${amount} ,Currency: ${currency}`
     );
-
+    console.log(errors)
     // Send standardized response with proper status code
     return res.status(400).json({
       success: false,
@@ -42,6 +47,7 @@ function validateInputs(req, res, next) {
         email,
         phoneno,
         amount,
+        currency
       },
     });
   }
